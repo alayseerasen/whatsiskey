@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>MashupKey — тональность для мешапов</title>
+  <meta name="description" content="Калькулятор тональностей для мешаперов. Полутоны, центы, скорость в % и гармоническая совместимость по Camelot Wheel.">
+  <style>
+    :root{
+      --bg:#09070f;--panel:#11101a;--panel2:#171522;--text:#f6f2ff;--muted:#aaa3bb;
+      --accent:#caa7ff;--accent2:#8f6cff;--line:#2a2638;--good:#9ee6bd;--warn:#ffd48a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:
+      radial-gradient(circle at 20% 0%,#24163d 0,#09070f 34%),var(--bg);color:var(--text)}
+    .wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:42px 0 60px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:34px}
+    .brand{font-size:24px;font-weight:800;letter-spacing:-.7px}
+    .brand span{color:var(--accent)}
+    .tag{color:var(--muted);font-size:13px}
+    h1{font-size:clamp(34px,6vw,62px);line-height:.98;letter-spacing:-2.7px;max-width:760px;margin:0 0 16px}
+    .lead{font-size:17px;line-height:1.55;color:var(--muted);max-width:680px;margin:0 0 30px}
+    .card{background:linear-gradient(145deg,rgba(23,21,34,.96),rgba(13,12,20,.96));border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.3)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    label{display:block;color:var(--muted);font-size:13px;font-weight:700;margin:0 0 9px}
+    select{width:100%;appearance:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:15px 44px 15px 15px;font-size:16px;outline:none}
+    select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(202,167,255,.12)}
+    .select-wrap{position:relative}
+    .select-wrap:after{content:"⌄";position:absolute;right:16px;top:12px;color:var(--muted);font-size:20px;pointer-events:none}
+    .direction{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .dir{border:1px solid var(--line);background:#100f17;color:var(--muted);padding:13px;border-radius:13px;cursor:pointer;font-weight:700}
+    .dir.active{background:rgba(143,108,255,.14);border-color:#8060dd;color:#fff}
+    .result{margin-top:18px;border-radius:19px;padding:22px;background:rgba(202,167,255,.07);border:1px solid rgba(202,167,255,.18)}
+    .result-top{display:flex;justify-content:space-between;gap:20px;align-items:end}
+    .result-title{color:var(--muted);font-size:13px;font-weight:700}
+    .answer{font-size:clamp(38px,7vw,64px);font-weight:900;letter-spacing:-2px;margin-top:4px}
+    .semitones{font-size:18px;color:var(--good);font-weight:800;white-space:nowrap}
+    .explain{color:var(--muted);line-height:1.5;margin:13px 0 0}
+    .mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px}
+    .mini div{background:#0d0c13;border:1px solid var(--line);border-radius:13px;padding:13px}
+    .mini b{display:block;font-size:17px;margin-top:4px}.mini span{font-size:11px;color:var(--muted)}
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    button.action{border:1px solid var(--line);background:#171521;color:#fff;border-radius:12px;padding:11px 14px;cursor:pointer}
+    button.action:hover{border-color:#64518e}
+    .section{margin-top:18px}
+    .section h2{font-size:18px;margin:0 0 10px}
+    .note{color:var(--muted);font-size:13px;line-height:1.5}
+    .keyboard{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-top:15px}
+    .key{height:38px;border-radius:8px;background:#171521;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+    .key.on{background:rgba(202,167,255,.2);border-color:#8d70c8;color:#fff}
+    .harmonic{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .hcard{background:#0d0c13;border:1px solid var(--line);border-radius:16px;padding:16px}
+    .hcard .hlabel{color:var(--muted);font-size:12px;font-weight:700}
+    .hcard .hcode{font-size:30px;font-weight:900;margin:4px 0 2px;letter-spacing:-1px}
+    .hcard .hname{color:var(--muted);font-size:13px}
+    .matchbar{margin-top:14px;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;text-align:center}
+    .matchbar.perfect{background:rgba(158,230,189,.14);border:1px solid rgba(158,230,189,.35);color:var(--good)}
+    .matchbar.good{background:rgba(202,167,255,.12);border:1px solid rgba(202,167,255,.3);color:var(--accent)}
+    .matchbar.warn{background:rgba(255,212,138,.12);border:1px solid rgba(255,212,138,.3);color:var(--warn)}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .chip{background:#171521;border:1px solid var(--line);border-radius:20px;padding:8px 13px;font-size:12px;color:var(--text)}
+    .chip b{color:var(--accent)}
+    .wheel-row{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-top:10px}
+    .wcell{height:44px;border-radius:9px;background:#171521;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--muted);line-height:1.2}
+    .wcell b{font-size:12px;color:var(--text)}
+    .wcell.src{background:rgba(202,167,255,.22);border-color:#8d70c8;color:#fff}
+    .wcell.tgt{background:rgba(158,230,189,.18);border-color:#5fa87f;color:#fff}
+    .wcell.both{background:linear-gradient(135deg,rgba(202,167,255,.3),rgba(158,230,189,.28));border-color:#8d70c8;color:#fff}
+    footer{margin-top:28px;color:#716a7d;font-size:12px;text-align:center}
+    @media(max-width:650px){.grid,.direction,.harmonic{grid-template-columns:1fr}.result-top{display:block}.semitones{margin-top:8px}.wrap{padding-top:26px}header{margin-bottom:25px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Mashup<span>Key</span></div>
+    <div class="tag">key matching tool</div>
+  </header>
+
+  <h1>Сведи тональности<br>без угадываний.</h1>
+  <p class="lead">Выбери тональность инструментала и вокала — сайт покажет, на сколько полутонов и центов транспонировать одну из дорожек, а также насколько гармонично они сочетаются друг с другом.</p>
+
+  <main class="card">
+    <div class="grid">
+      <div>
+        <label for="beat">ТОНАЛЬНОСТЬ ИНСТРУМЕНТАЛА</label>
+        <div class="select-wrap"><select id="beat">
+        <optgroup label="Мажор">
+        <option value="0-major">C major</option>
+        <option value="1-major">C♯ / D♭ major</option>
+        <option value="2-major">D major</option>
+        <option value="3-major">D♯ / E♭ major</option>
+        <option value="4-major">E major</option>
+        <option value="5-major">F major</option>
+        <option value="6-major">F♯ / G♭ major</option>
+        <option value="7-major">G major</option>
+        <option value="8-major">G♯ / A♭ major</option>
+        <option value="9-major">A major</option>
+        <option value="10-major">A♯ / B♭ major</option>
+        <option value="11-major">B major</option>
+        </optgroup>
+        <optgroup label="Минор">
+        <option value="0-minor">C minor</option>
+        <option value="1-minor">C♯ / D♭ minor</option>
+        <option value="2-minor">D minor</option>
+        <option value="3-minor">D♯ / E♭ minor</option>
+        <option value="4-minor">E minor</option>
+        <option value="5-minor">F minor</option>
+        <option value="6-minor">F♯ / G♭ minor</option>
+        <option value="7-minor">G minor</option>
+        <option value="8-minor">G♯ / A♭ minor</option>
+        <option value="9-minor">A minor</option>
+        <option value="10-minor">A♯ / B♭ minor</option>
+        <option value="11-minor">B minor</option>
+        </optgroup>
+      </select></div>
+      </div>
+      <div>
+        <label for="vocal">ТОНАЛЬНОСТЬ ВОКАЛА</label>
+        <div class="select-wrap"><select id="vocal">
+        <optgroup label="Мажор">
+        <option value="0-major">C major</option>
+        <option value="1-major">C♯ / D♭ major</option>
+        <option value="2-major">D major</option>
+        <option value="3-major">D♯ / E♭ major</option>
+        <option value="4-major">E major</option>
+        <option value="5-major">F major</option>
+        <option value="6-major">F♯ / G♭ major</option>
+        <option value="7-major">G major</option>
+        <option value="8-major">G♯ / A♭ major</option>
+        <option value="9-major">A major</option>
+        <option value="10-major">A♯ / B♭ major</option>
+        <option value="11-major">B major</option>
+        </optgroup>
+        <optgroup label="Минор">
+        <option value="0-minor">C minor</option>
+        <option value="1-minor">C♯ / D♭ minor</option>
+        <option value="2-minor">D minor</option>
+        <option value="3-minor">D♯ / E♭ minor</option>
+        <option value="4-minor">E minor</option>
+        <option value="5-minor">F minor</option>
+        <option value="6-minor">F♯ / G♭ minor</option>
+        <option value="7-minor">G minor</option>
+        <option value="8-minor">G♯ / A♭ minor</option>
+        <option value="9-minor">A minor</option>
+        <option value="10-minor">A♯ / B♭ minor</option>
+        <option value="11-minor">B minor</option>
+        </optgroup>
+      </select></div>
+      </div>
+    </div>
+
+    <div class="direction">
+      <button class="dir active" id="beatToVocal">Изменить инструментал</button>
+      <button class="dir" id="vocalToBeat">Изменить вокал</button>
+    </div>
+
+    <div class="result" aria-live="polite">
+      <div class="result-top">
+        <div>
+          <div class="result-title">РЕЗУЛЬТАТ</div>
+          <div class="answer" id="answer">0 полутонов</div>
+        </div>
+        <div class="semitones" id="directionText">Инструментал → вокал</div>
+      </div>
+      <p class="explain" id="explain"></p>
+
+      <div class="mini">
+        <div><span>Было</span><b id="fromKey">—</b></div>
+        <div><span>Изменение</span><b id="change">0</b></div>
+        <div><span>Станет</span><b id="toKey">—</b></div>
+        <div><span>Центы</span><b id="cents">0 ct</b></div>
+        <div><span>Скорость / Pitch</span><b id="pitchPct">0.00%</b></div>
+      </div>
+
+      <div class="tools">
+        <button class="action" id="calculate">Рассчитать ещё раз</button>
+        <button class="action" id="copy">Скопировать результат</button>
+        <button class="action" id="swap">Поменять местами</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Гармоническая совместимость (Camelot Wheel)</h2>
+      <div class="note">Camelot Wheel — система, которой пользуются диджеи для гармоничного микширования. Каждой тональности соответствует код (например 8B). Лучше всего сочетаются одинаковые коды, соседние номера того же типа (±1) и тот же номер с другой буквой (относительная тональность).</div>
+
+      <div class="harmonic">
+        <div class="hcard">
+          <div class="hlabel">ИНСТРУМЕНТАЛ</div>
+          <div class="hcode" id="beatCamelot">8B</div>
+          <div class="hname" id="beatCamelotName">C major</div>
+        </div>
+        <div class="hcard">
+          <div class="hlabel">ВОКАЛ</div>
+          <div class="hcode" id="vocalCamelot">5A</div>
+          <div class="hname" id="vocalCamelotName">C minor</div>
+        </div>
+      </div>
+
+      <div class="matchbar" id="matchbar">—</div>
+
+      <div class="note" style="margin-top:14px">Тональности, которые хорошо лягут третьим слоем в мешап (относительно инструментала):</div>
+      <div class="chips" id="chips"></div>
+
+      <div class="note" style="margin-top:14px">Colёсо Camelot целиком — подсвечены коды инструментала и вокала:</div>
+      <div class="wheel-row" id="wheelB"></div>
+      <div class="wheel-row" id="wheelA" style="margin-top:5px"></div>
+    </div>
+
+    <div class="section">
+      <h2>Как это считается</h2>
+      <div class="note">Сайт ищет кратчайшее расстояние между двумя тональностями по 12-полутоновому кругу. Например, A minor → C minor = +3 полутона = 300 центов. Если результат можно получить в обе стороны, показывается кратчайший путь. Скорость/Pitch — это процент, на который нужно изменить темп/питч дорожки на проигрывателе или в питч-шифтере, чтобы получить такой же сдвиг.</div>
+      <div class="keyboard" id="keyboard"></div>
+    </div>
+  </main>
+
+  <footer>MashupKey · работает прямо в браузере · ничего не загружает на сервер</footer>
+</div>
+
+<script>
+const notes = [
+  ["C","C♯ / D♭"],["C♯ / D♭","C♯ / D♭"],["D","D"],["D♯ / E♭","D♯ / E♭"],
+  ["E","E"],["F","F"],["F♯ / G♭","F♯ / G♭"],["G","G"],
+  ["G♯ / A♭","G♯ / A♭"],["A","A"],["A♯ / B♭","A♯ / B♭"],["B","B"]
+];
+const shortNames=["C","C♯/D♭","D","D♯/E♭","E","F","F♯/G♭","G","G♯/A♭","A","A♯/B♭","B"];
+const keys=[];
+for(let i=0;i<12;i++){ keys.push({value:i+"-major",label:notes[i][1]+" major",pc:i,mode:"major"}); }
+for(let i=0;i<12;i++){ keys.push({value:i+"-minor",label:notes[i][1]+" minor",pc:i,mode:"minor"}); }
+
+// Camelot Wheel mapping (by pitch class)
+const majorCamelotNum=[8,3,10,5,12,7,2,9,4,11,6,1];
+const minorCamelotNum=[5,12,7,2,9,4,11,6,1,8,3,10];
+function camelotOf(pc,mode){
+  const num = mode==="major" ? majorCamelotNum[pc] : minorCamelotNum[pc];
+  return num+(mode==="major"?"B":"A");
+}
+const camelotMap={};
+for(let pc=0;pc<12;pc++){
+  camelotMap[camelotOf(pc,"major")]={pc,mode:"major"};
+  camelotMap[camelotOf(pc,"minor")]={pc,mode:"minor"};
+}
+function wrapNum(n){return ((n-1+12)%12)+1}
+function camelotLabel(pc,mode){return notes[pc][1]+" "+(mode==="major"?"major":"minor")}
+
+const beat=document.querySelector("#beat"), vocal=document.querySelector("#vocal");
+beat.value="9-minor";
+vocal.value="0-minor";
+let direction="beatToVocal";
+const $=id=>document.querySelector(id);
+function getKey(v){return keys.find(k=>k.value===v)}
+function signed(n){return n>0?"+"+n:String(n)}
+function shortest(from,to){
+  let d=(to-from+12)%12;
+  return d<=6?d:d-12;
+}
+
+function renderKeyboardHighlight(sourcePc,targetPc){
+  document.querySelectorAll(".key").forEach((el,i)=>{
+    el.classList.toggle("on",i===sourcePc || i===targetPc);
+  });
+}
+
+function renderHarmonic(a,b){
+  const beatCode=camelotOf(a.pc,a.mode);
+  const vocalCode=camelotOf(b.pc,b.mode);
+  $("#beatCamelot").textContent=beatCode;
+  $("#beatCamelotName").textContent=a.label;
+  $("#vocalCamelot").textContent=vocalCode;
+  $("#vocalCamelotName").textContent=b.label;
+
+  const bNum=parseInt(beatCode), bLet=beatCode.slice(-1);
+  const vNum=parseInt(vocalCode), vLet=vocalCode.slice(-1);
+  const bar=$("#matchbar");
+  if(beatCode===vocalCode){
+    bar.className="matchbar perfect";
+    bar.textContent="Идеальное совпадение — тональности полностью гармоничны, транспонировать необязательно.";
+  }else if(bNum===vNum){
+    bar.className="matchbar perfect";
+    bar.textContent="Относительные тональности ("+beatCode+" / "+vocalCode+") — звучат гармонично без изменений.";
+  }else if(bLet===vLet && (wrapNum(bNum+1)===vNum || wrapNum(bNum-1)===vNum)){
+    bar.className="matchbar good";
+    bar.textContent="Соседние тональности на колесе ("+beatCode+" ↔ "+vocalCode+") — сочетаются хорошо, лёгкий гармонический сдвиг.";
+  }else{
+    bar.className="matchbar warn";
+    bar.textContent="Тональности далеки друг от друга на Camelot Wheel ("+beatCode+" / "+vocalCode+") — рекомендуется транспонировать одну из дорожек.";
+  }
+
+  // compatible keys relative to instrumental
+  const compatCodes=[
+    wrapNum(bNum)+(bLet==="A"?"B":"A"),
+    wrapNum(bNum+1)+bLet,
+    wrapNum(bNum-1)+bLet,
+    wrapNum(bNum+2)+bLet
+  ];
+  const tags=["относительная","+1 (энергичнее)","-1 (спокойнее)","+2 (буст энергии)"];
+  const chips=$("#chips");
+  chips.innerHTML="";
+  compatCodes.forEach((code,i)=>{
+    const info=camelotMap[code];
+    if(!info) return;
+    const div=document.createElement("div");
+    div.className="chip";
+    div.innerHTML="<b>"+code+"</b> "+camelotLabel(info.pc,info.mode)+" — "+tags[i];
+    chips.appendChild(div);
+  });
+
+  // wheel rows: B (major) 1-12, A (minor) 1-12
+  const wheelB=$("#wheelB"), wheelA=$("#wheelA");
+  wheelB.innerHTML=""; wheelA.innerHTML="";
+  for(let n=1;n<=12;n++){
+    const codeB=n+"B", codeA=n+"A";
+    const infoB=camelotMap[codeB], infoA=camelotMap[codeA];
+    const cellB=document.createElement("div");
+    cellB.className="wcell";
+    if(codeB===beatCode && codeB===vocalCode) cellB.className+=" both";
+    else if(codeB===beatCode) cellB.className+=" src";
+    else if(codeB===vocalCode) cellB.className+=" tgt";
+    cellB.innerHTML="<b>"+codeB+"</b>"+shortNames[infoB.pc];
+    wheelB.appendChild(cellB);
+
+    const cellA=document.createElement("div");
+    cellA.className="wcell";
+    if(codeA===beatCode && codeA===vocalCode) cellA.className+=" both";
+    else if(codeA===beatCode) cellA.className+=" src";
+    else if(codeA===vocalCode) cellA.className+=" tgt";
+    cellA.innerHTML="<b>"+codeA+"</b>"+shortNames[infoA.pc];
+    wheelA.appendChild(cellA);
+  }
+}
+
+function render(){
+  const a=getKey(beat.value), b=getKey(vocal.value);
+  const source=direction==="beatToVocal"?a:b;
+  const target=direction==="beatToVocal"?b:a;
+  const shift=shortest(source.pc,target.pc);
+  const targetPc=(source.pc+shift+12)%12;
+  const targetKey=keys.find(k=>k.pc===targetPc && k.mode===source.mode);
+  const sameMode=a.mode===b.mode;
+
+  $("#answer").textContent = shift===0 ? "0 полутонов" : `${signed(shift)} полутона`;
+  $("#directionText").textContent=direction==="beatToVocal"?"Инструментал → вокал":"Вокал → инструментал";
+  $("#fromKey").textContent=source.label;
+  $("#change").textContent=shift===0?"Без изменений":signed(shift)+" st";
+  $("#toKey").textContent=targetKey ? targetKey.label : target.label;
+
+  const cents=shift*100;
+  const pct=(Math.pow(2,shift/12)-1)*100;
+  $("#cents").textContent=(cents>0?"+":"")+cents+" ct";
+  $("#pitchPct").textContent=(pct>0?"+":"")+pct.toFixed(2)+"%";
+
+  if(!sameMode){
+    $("#explain").textContent="Внимание: тональности имеют разные лады. Транспонирование по полутонам сохранит лад исходной дорожки, поэтому для точного совпадения может понадобиться сменить лад или использовать относительную тональность.";
+  }else if(shift===0){
+    $("#explain").textContent="Тональности уже совпадают. Транспонировать ничего не нужно.";
+  }else{
+    const abs=Math.abs(shift);
+    const verb=shift>0?"поднять":"опустить";
+    $("#explain").textContent=`Чтобы получить ${target.label}, нужно ${verb} ${direction==="beatToVocal"?"инструментал":"вокал"} на ${abs} ${abs===1?"полутон":"полутона"} (${Math.abs(cents)} ct, ${Math.abs(pct).toFixed(2)}% pitch).`;
+  }
+
+  renderKeyboardHighlight(source.pc,target.pc);
+  renderHarmonic(a,b);
+}
+function setDir(d){
+  direction=d;
+  $("#beatToVocal").classList.toggle("active",d==="beatToVocal");
+  $("#vocalToBeat").classList.toggle("active",d==="vocalToBeat");
+  render();
+}
+beat.addEventListener("change",render); vocal.addEventListener("change",render);
+$("#beatToVocal").onclick=()=>setDir("beatToVocal");
+$("#vocalToBeat").onclick=()=>setDir("vocalToBeat");
+$("#swap").onclick=()=>{const x=beat.value;beat.value=vocal.value;vocal.value=x;render()};
+$("#calculate").onclick=()=>render();
+$("#copy").onclick=async()=>{
+  const text=`MashupKey: ${$("#fromKey").textContent} → ${$("#toKey").textContent}; изменение ${$("#change").textContent} (${$("#cents").textContent}, ${$("#pitchPct").textContent}); Camelot: ${$("#beatCamelot").textContent} / ${$("#vocalCamelot").textContent}`;
+  try{await navigator.clipboard.writeText(text);$("#copy").textContent="Скопировано ✓";setTimeout(()=>$("#copy").textContent="Скопировать результат",1400)}
+  catch{alert(text)}
+};
+
+const kb=$("#keyboard");
+for(let i=0;i<12;i++){const e=document.createElement("div");e.className="key";e.textContent=shortNames[i];kb.appendChild(e)}
+render();
+</script>
+</body>
+</html>
